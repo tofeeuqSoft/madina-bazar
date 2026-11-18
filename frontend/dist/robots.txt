@@ -1,0 +1,17 @@
+# Madina Bazar — https://www.madinabazar.com
+User-agent: *
+Allow: /
+Allow: /shop
+Allow: /product/
+Allow: /combos
+
+Disallow: /admin
+Disallow: /checkout
+Disallow: /cart
+Disallow: /orders
+Disallow: /wishlist
+Disallow: /login
+Disallow: /register
+Disallow: /payment/
+
+Sitemap: https://www.madinabazar.com/sitemap.xml

@@ -1,0 +1,84 @@
+name: CD — Deploy to VPS
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Deploy environment"
+        required: true
+        default: production
+        type: choice
+        options:
+          - production
+          - staging
+  push:
+    branches: [main, master]
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "docker-compose.yml"
+      - ".github/workflows/cd-vps.yml"
+
+# Only runs when secrets are configured. Safe no-op otherwise on forks.
+jobs:
+  deploy:
+    name: Deploy via SSH
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'production' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check deploy secrets
+        id: check
+        run: |
+          if [ -z "${{ secrets.VPS_HOST }}" ] || [ -z "${{ secrets.VPS_USER }}" ] || [ -z "${{ secrets.VPS_SSH_KEY }}" ]; then
+            echo "configured=false" >> $GITHUB_OUTPUT
+            echo "⚠️ VPS secrets missing (VPS_HOST, VPS_USER, VPS_SSH_KEY). Skipping deploy."
+          else
+            echo "configured=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup SSH
+        if: steps.check.outputs.configured == 'true'
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Deploy over SSH
+        if: steps.check.outputs.configured == 'true'
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          DEPLOY_PATH: ${{ secrets.VPS_DEPLOY_PATH || '/var/www/madina-bazar' }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no "$VPS_USER@$VPS_HOST" bash -s << ENDSSH
+            set -e
+            cd "$DEPLOY_PATH"
+
+            echo "==> Pulling latest code"
+            git fetch origin
+            git reset --hard origin/main || git reset --hard origin/master
+
+            echo "==> Backend"
+            cd backend
+            npm install --omit=dev
+            pm2 restart madina-bazar-api || pm2 start ecosystem.config.cjs --env production
+            pm2 save
+
+            echo "==> Frontend"
+            cd ../frontend
+            npm install
+            export VITE_API_URL="\${VITE_API_URL:-/api}"
+            npm run build
+
+            echo "==> Done"
+            pm2 status
+          ENDSSH
+
+      - name: Skip notice
+        if: steps.check.outputs.configured != 'true'
+        run: echo "Configure GitHub Secrets to enable automatic VPS deploy. See deploy/CICD.md"

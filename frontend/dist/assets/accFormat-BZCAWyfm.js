@@ -1,0 +1,2 @@
+const r=e=>`৳${Number(e||0).toLocaleString(void 0,{maximumFractionDigits:0})}`,c=(e,a)=>{const o=t=>`"${String(t!=null?t:"").replace(/"/g,'""')}"`;return[e.map(o).join(","),...a.map(t=>t.map(o).join(","))].join(`
+`)},s=(e,a,o)=>{const t=new Blob([c(a,o)],{type:"text/csv;charset=utf-8"}),n=document.createElement("a");n.href=URL.createObjectURL(t),n.download=`${e}.csv`,n.click(),URL.revokeObjectURL(n.href)},i=()=>new Date().toISOString().slice(0,10);export{i as a,s as d,r as t};
