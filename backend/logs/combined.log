@@ -890,3 +890,7 @@
 {"level":"info","message":"Background worker + scheduler starting","timestamp":"2026-10-19T02:03:48.910Z"}
 {"level":"info","message":"Scheduler started (expiry hourly, alerts 6h, capacity daily, reconcile daily, payments 30m, refunds hourly, reservations 15m, rto daily, audit weekly, holds daily, forecast daily, dispatch hourly, pricing hourly)","timestamp":"2026-10-19T02:03:48.999Z"}
 {"level":"info","message":"cron: expiry statuses refreshed","timestamp":"2026-10-19T02:15:00.663Z"}
+{"level":"info","message":"Background worker + scheduler starting","timestamp":"2026-11-18T17:56:37.104Z"}
+{"level":"info","message":"Scheduler started (expiry hourly, alerts 6h, capacity daily, reconcile daily, payments 30m, refunds hourly, reservations 15m, rto daily, audit weekly, holds daily, forecast daily, dispatch hourly, pricing hourly)","timestamp":"2026-11-18T17:56:37.189Z"}
+{"level":"error","message":"cron forecast SMS failed: forecastSmsHour is not defined","timestamp":"2026-11-18T18:00:00.023Z"}
+{"level":"info","message":"cron: payment reconcile (checked 1, confirmed 0, failed 0)","timestamp":"2026-11-18T18:00:00.056Z"}
